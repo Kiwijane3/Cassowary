@@ -16,6 +16,8 @@ public struct Tableau
 
     /// Set of non-basic variables (`Column.variable` only).
     public private(set) var externalParametricColumns: Set<Column> = []
+	
+	public var printDebugInformation: Bool = false;
 
     public init(columns: [Column: Set<Row>] = [:], rows: [Row: RowInfo] = [:])
     {
@@ -116,10 +118,12 @@ public struct Tableau
     /// Move `entryColumn` as basic variable and leave `exitColumn` as non-basic variable.
     public mutating func pivot(entryColumn: Column, exitColumn: Column)
     {
-        Debug.printTableau(self, "before pivot \(exitColumn) -> \(entryColumn)")
-        defer {
-            Debug.printTableau(self, "after pivot \(exitColumn) -> \(entryColumn)")
-        }
+		if printDebugInformation {
+			Debug.printTableau(self, "before pivot \(exitColumn) -> \(entryColumn)")
+			defer {
+				Debug.printTableau(self, "after pivot \(exitColumn) -> \(entryColumn)")
+			}
+		}
 
         let exitRow = Row(column: exitColumn)
         let entryRow = Row(column: entryColumn)
@@ -223,8 +227,10 @@ public struct Tableau
         // Remove zeros in newRowInfo.
         newRowInfo.terms = newRowInfo.terms.filter { !$1.isNearlyEqual(to: 0) }
 
-        Debug.print("    before substitute rowInfo = \(rowInfo)")
-        Debug.print("    after  substitute rowInfo = \(newRowInfo)")
+		if printDebugInformation {
+			Debug.print("    before substitute rowInfo = \(rowInfo)")
+			Debug.print("    after  substitute rowInfo = \(newRowInfo)")
+		}
 
         return newRowInfo
     }

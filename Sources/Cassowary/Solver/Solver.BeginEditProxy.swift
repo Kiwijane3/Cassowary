@@ -46,8 +46,10 @@ extension Solver
                 let solution = self.solver.cachedSolution
                 currentValue = solution[variable, default: 0]
             }
-
-            Debug.print("===> addStayVariable: \(variable) == \(currentValue)")
+			
+			if solver.printDebugInformation {
+            	Debug.print("===> addStayVariable: \(variable) == \(currentValue)")
+			}
             let stayConstraint = Constraint(raw: variable == currentValue, priority: priority)
 
             let markers = try self.solver._addConstraint(stayConstraint)
@@ -70,7 +72,9 @@ extension Solver
 
             let value = solution[variable, default: 0]
 
-            Debug.print("===> addEditVariable: \(variable) == \(value)")
+			if solver.printDebugInformation {
+				Debug.print("===> addEditVariable: \(variable) == \(value)")
+			}
             let editConstraint = Constraint(raw: -variable + value == 0, priority: priority)
             let markers = try self.solver._addConstraint(editConstraint)
 

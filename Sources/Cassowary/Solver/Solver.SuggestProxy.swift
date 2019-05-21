@@ -44,9 +44,11 @@ extension Solver
 
             let editRows = zip(editInfo.markers.columns, [1.0, -1.0])
                 .map { (Row(column: $0), $1)}
-
-            Debug.print("editRows = \(editRows) for editVariable = \(editVariable)")
-
+		
+			if solver.printDebugInformation {
+            	Debug.print("editRows = \(editRows) for editVariable = \(editVariable)")
+			}
+				
             // If either `errorPlusColumn` or `errorMinusColumn` is basic variable,
             // add or subtract `editCoeff * delta` to it's row's constant.
             // Note that editColumn's `editCoeff` is always `1` when entered into basic variable.
@@ -71,9 +73,11 @@ extension Solver
                     let editCoeff = rowInfo.terms[editInfo.markers.subMarker!, default: 0]
                     let newConstant = rowInfo.constant + editCoeff * delta
                     self.solver.tableau.updateRowConstant(row: row, constant: newConstant)
-
-                    Debug.printTableau(self.solver.tableau, "during suggestValue, row = \(row)")
-
+					
+					if solver.printDebugInformation {
+                    	Debug.printTableau(self.solver.tableau, "during suggestValue, row = \(row)")
+					}
+						
                     if row.isRestricted && newConstant < 0 {
                         self.solver.tableau.infeasibleRows.insert(row)
                     }

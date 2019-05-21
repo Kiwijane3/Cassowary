@@ -9,7 +9,11 @@ public struct Solver
     public var goal: Objective.Goal
 
     /// Simplex tableau.
-    public var tableau: Tableau
+	public var tableau: Tableau {
+		didSet {
+			tableau.printDebugInformation = printDebugInformation
+		}
+	}
 
     /// Dictionary to map marker variable per constraint.
     public var markerVariables: [Constraint: Column] = [:]
@@ -20,6 +24,12 @@ public struct Solver
 
     public private(set) var needsOptimize: Bool = false
 
+	public var printDebugInformation: Bool = false {
+		didSet {
+			tableau.printDebugInformation = printDebugInformation
+		}
+	}
+	
     public init(problem: Problem) throws
     {
         self.goal = problem.objective.goal
@@ -77,17 +87,23 @@ public struct Solver
             throw Error.addError(.constraintExists(constraint))
         }
 
-        Debug.print()
-        Debug.print("========================================")
-        Debug.print("addConstraint: \(constraint)")
-
+		if printDebugInformation {
+			Debug.print()
+			Debug.print("========================================")
+			Debug.print("addConstraint: \(constraint)")
+		}
+		
         let (rowInfo, markerColumn) = self._createRowInfo(constraint: constraint)
 
-        Debug.printTableau(self.tableau, "slack added")
-
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "slack added")
+		}
+			
         try self.addRowInfo(rowInfo, candidates: [markerColumn])
 
-        Debug.printTableau(self.tableau, "end addConstraint: \(constraint)")
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "end addConstraint: \(constraint)")
+		}
 
         // Comment-Out: Optimizing per `addConstraint` will fail in simplex algorithm.
 //        try self.optimize()
@@ -100,9 +116,11 @@ public struct Solver
     /// After that, slack & dummy variables are added to `rowInfo`.
     private mutating func _createRowInfo(constraint: Constraint) -> (RowInfo, markerColumn: Column)
     {
-        Debug.print("before createRowInfo")
-        Debug.print("    constraint = \(constraint)")
-        Debug.print("    constraint.rowInfo = \(constraint.rowInfo)")
+		if printDebugInformation {
+        	Debug.print("before createRowInfo")
+        	Debug.print("    constraint = \(constraint)")
+        	Debug.print("    constraint.rowInfo = \(constraint.rowInfo)")
+		}
 
         // Update `rowInfo` using current `tableau`.
         var newRowInfo = self.tableau.parametrizeRowInfo(constraint.rowInfo)
@@ -128,8 +146,10 @@ public struct Solver
             newRowInfo *= -1
         }
 
-        Debug.print("    final createRowInfo result = \(newRowInfo)")
-        Debug.print()
+		if printDebugInformation {
+        	Debug.print("    final createRowInfo result = \(newRowInfo)")
+        	Debug.print()
+		}
 
         return (newRowInfo, markerColumn)
     }
@@ -160,14 +180,20 @@ public struct Solver
     ///   - `Error.optimizeError(.unbounded)`
     public mutating func addRowInfo(_ rowInfo: RowInfo, candidates: [Column]) throws
     {
-        Debug.print("addRowInfo = \(rowInfo), candidates = \(candidates)")
+		if printDebugInformation {
+        	Debug.print("addRowInfo = \(rowInfo), candidates = \(candidates)")
+		}
 
         if let basicColumn = try Solver.findBasicColumn(rowInfo: rowInfo, candidates: candidates) {
-            Debug.print("===> findBasicColumn = \(basicColumn)")
+			if printDebugInformation {
+				Debug.print("===> findBasicColumn = \(basicColumn)")
+			}
             self._solveAndInsert(rowInfo: rowInfo, for: basicColumn)
         }
         else {
-            Debug.print("===> Could not findBasicColumn")
+			if printDebugInformation {
+            	Debug.print("===> Could not findBasicColumn")
+			}
             try self._solvePhase1Simplex(rowInfo: rowInfo)
         }
 
@@ -179,17 +205,19 @@ public struct Solver
     {
         precondition(rowInfo.constant >= 0)
 
-        Debug.print("===> before rowInfo.solve, rowInfo = \(rowInfo), basicColumn = \(basicColumn)")
-
+		if printDebugInformation {
+        	Debug.print("===> before rowInfo.solve, rowInfo = \(rowInfo), basicColumn = \(basicColumn)")
+		}
         var rowInfo = rowInfo
 
         // NOTE:
         // Modified `rowInfo` will have basic feasible solved form,
         // e.g. `x3 = -1/3 * x1 + -2/3 * x2`.
         rowInfo.solve(column: basicColumn)
-
-        Debug.print("===> after rowInfo.solve: \(basicColumn) = \(rowInfo), basicColumn = \(basicColumn)")
-
+		if printDebugInformation {
+			Debug.print("===> after rowInfo.solve: \(basicColumn) = \(rowInfo), basicColumn = \(basicColumn)")
+		}
+			
         // Substitute out all basic variables in current tableau.
         self.tableau._parametrizeRows(solvedColumn: basicColumn, solvedRowInfo: rowInfo)
 
@@ -205,12 +233,14 @@ public struct Solver
     private mutating func _solvePhase1Simplex(rowInfo: RowInfo) throws
     {
         precondition(rowInfo.constant >= 0)
-
-        Debug.printTableau(self.tableau, "before Simplex Phase1, rowInfo = \(rowInfo)")
-        defer {
-            Debug.printTableau(self.tableau, "after Simplex Phase1")
-            Debug.print()
-        }
+		
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "before Simplex Phase1, rowInfo = \(rowInfo)")
+			defer {
+				Debug.printTableau(self.tableau, "after Simplex Phase1")
+				Debug.print()
+			}
+		}
 
         let artificialColumn = Column.artificialVariable(self._makeArtificialVariable())
         let artificialRow = Row(column: artificialColumn)
@@ -227,7 +257,9 @@ public struct Solver
         try self.optimize(objectiveRow: .artificialObjective)
 
         if !self.tableau.rows[.artificialObjective]!.constant.isNearlyEqual(to: 0) {
-            Debug.printTableau(self.tableau, "AddError.infeasible")
+			if printDebugInformation {
+				Debug.printTableau(self.tableau, "AddError.infeasible")
+			}
             throw Error.optimizeError(.infeasible)
         }
 
@@ -364,17 +396,20 @@ public struct Solver
     public mutating func optimize(objectiveRow: Row = .objective) throws
     {
         guard self.needsOptimize else { return }
-
-        Debug.printTableau(self.tableau, "before optimize")
-        defer {
-            Debug.printTableau(self.tableau, "after optimize")
-        }
-
+		
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "before optimize")
+			defer {
+				Debug.printTableau(self.tableau, "after optimize")
+			}
+		}
         while true {
             guard let objectiveRowInfo = self.tableau.rows[objectiveRow] else { return }
 
-            Debug.print("[optimize loop] objectiveRowInfo.terms = \(objectiveRowInfo.terms)")
-
+			if printDebugInformation {
+				Debug.print("[optimize loop] objectiveRowInfo.terms = \(objectiveRowInfo.terms)")
+			}
+				
             guard let (entryColumn, _) = objectiveRowInfo.terms
                 .sorted(by: { $0.key < $1.key })
                 .first(where: { column, coeff in
@@ -382,24 +417,32 @@ public struct Solver
                 })
                 else {
                     // Exit when all coefficients of pivotable variables are non-negative.
-                    Debug.print("[optimize loop] Stop finding pivot")
+					if printDebugInformation {
+                    	Debug.print("[optimize loop] Stop finding pivot")
+					}
                     break
                 }
 
             var minRatio = Double.greatestFiniteMagnitude
             var exitRow: Row?
 
-            Debug.printTableau(self.tableau, "[optimize loop] Find pivot start, entryColumn = \(entryColumn)")
-
+			if printDebugInformation {
+				Debug.printTableau(self.tableau, "[optimize loop] Find pivot start, entryColumn = \(entryColumn)")
+			}
+			
             // Find pivot row with minimum ratio.
             if let rows = self.tableau.columns[entryColumn] {
                 for row in rows where row.isPivotable {
                     let rowInfo = self.tableau.rows[row]!
                     let entryCoeff = rowInfo.terms[entryColumn, default: 0]
-                    Debug.print("[optimize loop] check entryCoeff = \(entryCoeff) for row = \(row)")
+					if printDebugInformation {
+                    	Debug.print("[optimize loop] check entryCoeff = \(entryCoeff) for row = \(row)")
+					}
                     if entryCoeff < 0 {
                         let ratio = -rowInfo.constant / entryCoeff
-                        Debug.print("  [optimize loop] check ratio = \(ratio) for row = \(row)")
+						if printDebugInformation {
+                        	Debug.print("  [optimize loop] check ratio = \(ratio) for row = \(row)")
+						}
 
                         if ratio < minRatio {
                             minRatio = ratio
@@ -409,14 +452,19 @@ public struct Solver
                 }
             }
 
-            Debug.print("minRatio = \(minRatio), exitRow = \(String(describing: exitRow))")
-
+			if printDebugInformation {
+				Debug.print("minRatio = \(minRatio), exitRow = \(String(describing: exitRow))")
+			}
             if let exitColumn = exitRow.flatMap(Column.init) {
-                Debug.print("optimize to pivot: \(exitColumn) -> \(entryColumn)")
+				if printDebugInformation {
+                	Debug.print("optimize to pivot: \(exitColumn) -> \(entryColumn)")
+				}
                 self.tableau.pivot(entryColumn: entryColumn, exitColumn: exitColumn)
             }
             else {
-                Debug.printTableau(self.tableau, "Error.optimizeError(.unbounded)")
+				if printDebugInformation {
+					Debug.printTableau(self.tableau, "Error.optimizeError(.unbounded)")
+				}
                 throw Error.optimizeError(.unbounded)
             }
         }
@@ -427,10 +475,12 @@ public struct Solver
     /// - Throws: `Error.optimizeError(.dualOptimizeFailed)`
     public mutating func dualOptimize(objectiveRow: Row = .objective) throws
     {
-        Debug.printTableau(self.tableau, "before dualOptimize")
-        defer {
-            Debug.printTableau(self.tableau, "after dualOptimize")
-        }
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "before dualOptimize")
+			defer {
+				Debug.printTableau(self.tableau, "after dualOptimize")
+			}
+		}
 
         let objectiveRowInfo = self.tableau.rows[objectiveRow]!
 
@@ -457,7 +507,9 @@ public struct Solver
                     self.tableau.pivot(entryColumn: entryColumn, exitColumn: exitColumn)
                 }
                 else {
-                    Debug.printTableau(self.tableau, "OptimizeError.dualOptimizeFailed")
+					if printDebugInformation {
+						Debug.printTableau(self.tableau, "OptimizeError.dualOptimizeFailed")
+					}
                     throw Error.optimizeError(.dualOptimizeFailed)
                 }
             }

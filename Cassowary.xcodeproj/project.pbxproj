@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		6F1E1E66225D6089008E025E /* Simplex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Cassowary::Simplex::Product" /* Simplex.framework */; };
 		OBJ_103 /* BasicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_52 /* BasicTests.swift */; };
 		OBJ_104 /* DegeneracyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_53 /* DegeneracyTests.swift */; };
 		OBJ_105 /* Expected.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_55 /* Expected.swift */; };
@@ -43,7 +44,6 @@
 		OBJ_127 /* Solver.StayEditInfos.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_47 /* Solver.StayEditInfos.swift */; };
 		OBJ_128 /* Solver.SuggestProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* Solver.SuggestProxy.swift */; };
 		OBJ_129 /* Solver.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_49 /* Solver.swift */; };
-		OBJ_131 /* Simplex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Cassowary::Simplex::Product" /* Simplex.framework */; };
 		OBJ_137 /* Constraint+Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* Constraint+Operators.swift */; };
 		OBJ_138 /* Constraint.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Constraint.swift */; };
 		OBJ_139 /* DoubleConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* DoubleConvertible.swift */; };
@@ -78,13 +78,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1F3D14141F5BD0C200161374 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = OBJ_1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = "Cassowary::Simplex";
-			remoteInfo = Simplex;
-		};
 		1F3D14151F5BD0C300161374 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
@@ -191,7 +184,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_131 /* Simplex.framework in Frameworks */,
+				6F1E1E66225D6089008E025E /* Simplex.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,6 +207,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6F1E1E64225D5FD1008E025E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		OBJ_20 /* Internals */ = {
 			isa = PBXGroup;
 			children = (
@@ -291,6 +291,7 @@
 				OBJ_7 /* Sources */,
 				OBJ_50 /* Tests */,
 				OBJ_69 /* Products */,
+				6F1E1E64225D5FD1008E025E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -410,7 +411,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				OBJ_132 /* PBXTargetDependency */,
 			);
 			name = Cassowary;
 			productName = Cassowary;
@@ -495,6 +495,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = OBJ_5;
@@ -605,11 +606,6 @@
 			target = "Cassowary::Simplex" /* Simplex */;
 			targetProxy = 1F3D14171F5BD0C300161374 /* PBXContainerItemProxy */;
 		};
-		OBJ_132 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = "Cassowary::Simplex" /* Simplex */;
-			targetProxy = 1F3D14141F5BD0C200161374 /* PBXContainerItemProxy */;
-		};
 		OBJ_164 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Cassowary::SimplexTests" /* SimplexTests */;
@@ -672,6 +668,7 @@
 		OBJ_115 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

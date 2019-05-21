@@ -19,6 +19,8 @@ public struct Solver
     private var _workaround_solverStack: [Solver] = []
 
     private var errorCounter: UInt = 0
+	
+	public var printDebugInformation: Bool = false;
 
     public init()
     {
@@ -114,13 +116,15 @@ public struct Solver
     @discardableResult
     internal mutating func _addConstraint(_ constraint: Constraint) throws -> Markers
     {
-        Debug.print()
-        Debug.print("========================================")
-        Debug.printTableau(self.tableau, "addConstraint: \(constraint)")
-        defer {
-            Debug.printTableau(self.tableau, "end addConstraint: \(constraint)")
-            Debug.print("\n\n\n")
-        }
+		if printDebugInformation {
+			Debug.print()
+			Debug.print("========================================")
+			Debug.printTableau(self.tableau, "addConstraint: \(constraint)")
+			defer {
+				Debug.printTableau(self.tableau, "end addConstraint: \(constraint)")
+				Debug.print("\n\n\n")
+			}
+		}
 
         let (rowInfo, marker) = self._createRowInfo(constraint: constraint)
 
@@ -148,9 +152,11 @@ public struct Solver
     {
         let rawConstraint = constraint.raw
 
-        Debug.print("before createRowInfo")
-        Debug.print("    constraint = \(rawConstraint)")
-        Debug.print("    rowInfo = \(rawConstraint.rowInfo)")
+		if printDebugInformation {
+			Debug.print("before createRowInfo")
+			Debug.print("    constraint = \(rawConstraint)")
+			Debug.print("    rowInfo = \(rawConstraint.rowInfo)")
+		}
 
         let mainMarker: Column
         var subMarker: Column?
@@ -210,8 +216,10 @@ public struct Solver
             newRowInfo *= -1
         }
 
-        Debug.print("    final slack-added newRowInfo = \(newRowInfo)")
-        Debug.print()
+		if printDebugInformation {
+			Debug.print("    final slack-added newRowInfo = \(newRowInfo)")
+			Debug.print()
+		}
 
         let markers = Markers(main: mainMarker, sub: subMarker)
 
@@ -285,10 +293,12 @@ public struct Solver
     ///   - `Error.optimizeError(.unbounded)`
     public mutating func beginEdit(_ register: (inout BeginEditProxy) throws -> ()) throws
     {
-        Debug.printTableau(self.tableau, "before beginEdit")
-        defer {
-            Debug.printTableau(self.tableau, "after beginEdit")
-        }
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "before beginEdit")
+			defer {
+				Debug.printTableau(self.tableau, "after beginEdit")
+			}
+		}
 
         self._workaround_solverStack.append(self)
 
@@ -311,10 +321,12 @@ public struct Solver
     ///   - `Error.optimizeError(.dualOptimizeFailed)`
     public mutating func endEdit() throws
     {
-        Debug.printTableau(self.tableau, "before endEdit")
-        defer {
-            Debug.printTableau(self.tableau, "after endEdit")
-        }
+		if printDebugInformation {
+			Debug.printTableau(self.tableau, "before endEdit")
+			defer {
+				Debug.printTableau(self.tableau, "after endEdit")
+			}
+		}
 
         if let solver = self._workaround_solverStack.last {
             self = solver
@@ -355,18 +367,24 @@ public struct Solver
     @discardableResult
     public mutating func suggest(_ register: (inout SuggestProxy) throws -> ()) throws -> [Variable: Double]
     {
-        Debug.printTableau(self.tableau, "before suggest")
-
+		if printDebugInformation {
+        	Debug.printTableau(self.tableau, "before suggest")
+		}
+			
         var proxy = SuggestProxy(solver: self)
         try register(&proxy)
         self = proxy.solver
 
-        Debug.printTableau(self.tableau, "during suggest")
-
+		if printDebugInformation {
+        	Debug.printTableau(self.tableau, "during suggest")
+		}
+			
         let solution = try self._solveDual()
 
-        Debug.printTableau(self.tableau, "after suggest")
-
+		if printDebugInformation {
+        	Debug.printTableau(self.tableau, "after suggest")
+		}
+			
         return solution
     }
 }
