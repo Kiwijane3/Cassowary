@@ -19,7 +19,7 @@ internal func _shortHashString<H: Hashable>(_ h: H) -> String
 internal func _leftPad(_ string: String, length: Int, character: Character = " ") -> String
 {
     var outString: String = string
-    let extraLength = length - outString.characters.count
+    let extraLength = length - outString.count
 
     var i = 0
     while i < extraLength {
